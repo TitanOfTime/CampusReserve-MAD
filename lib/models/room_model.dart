@@ -31,7 +31,7 @@ final List<Room> mockRooms = [
     amenities: 'WiFi, Power',
     capacity: 1,
     status: 'Available',
-    imageUrl: 'https://images.unsplash.com/photo-1599719032228-48fe3b6f60f7?w=600&h=400&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1486946255434-2466348c2166?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fHN0dWR5JTIwZGVza3xlbnwwfHwwfHx8MA%3D%3D',
     location: '3rd Floor, Quiet Zone',
   ),
   Room(
@@ -61,7 +61,17 @@ final List<Room> mockRooms = [
     amenities: 'Editing Workstation, Green Screen',
     capacity: 8,
     status: 'Available',
-    imageUrl: 'https://images.unsplash.com/photo-1497215842519-e21cc028cb29?w=600&h=400&fit=crop',
+    imageUrl: 'https://picsum.photos/600/400?random=4',
     location: '5th Floor, Media Center',
+  ),
+  Room(
+    id: '5',
+    name: 'Lecture Hall B',
+    type: 'Free',
+    amenities: 'Projector, 50 Seats, Mic',
+    capacity: 50,
+    status: 'Booked',
+    imageUrl: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&h=400&fit=crop',
+    location: 'Ground Floor, Main Block',
   ),
 ];
