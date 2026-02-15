@@ -50,17 +50,32 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     if (_formKey.currentState!.validate() && _selectedDate != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Booking confirmed for ${widget.room.name}!',
-          ),
-          duration: const Duration(seconds: 3),
+          content: Text('Booking confirmed for ${widget.room.name}!'),
+          duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,
         ),
       );
-      // Clear form
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
+
+      // After showing confirmation, either pop the route if possible
+      // or reset the form (useful for embedded/side-by-side layouts).
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (!mounted) return;
+        if (Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
+        } else {
+          // Reset the form fields
+          _formKey.currentState?.reset();
+          setState(() {
+            _purposeController.clear();
+            _selectedDate = null;
+            _selectedDuration = null;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Booking successful.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
         }
       });
     } else if (_selectedDate == null) {

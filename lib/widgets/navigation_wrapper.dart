@@ -14,16 +14,12 @@ class NavigationWrapper extends StatefulWidget {
 
 class _NavigationWrapperState extends State<NavigationWrapper> {
   int _selectedIndex = 0;
-  Room? _selectedRoom;
+  // Navigation now uses Navigator stack for detail views
 
   @override
   Widget build(BuildContext context) {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-
-    if (_selectedRoom != null) {
-      return _buildDetailView();
-    }
 
     if (isLandscape) {
       return _buildLandscapeLayout();
@@ -111,9 +107,11 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
       case 0:
         return DashboardScreen(
           onRoomSelected: (room) {
-            setState(() {
-              _selectedRoom = room;
-            });
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (ctx) => BookingDetailScreen(room: room),
+              ),
+            );
           },
         );
       case 1:
@@ -125,9 +123,11 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
       default:
         return DashboardScreen(
           onRoomSelected: (room) {
-            setState(() {
-              _selectedRoom = room;
-            });
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (ctx) => BookingDetailScreen(room: room),
+              ),
+            );
           },
         );
     }
@@ -229,9 +229,11 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
                       ],
                     ),
                     onTap: () {
-                      setState(() {
-                        _selectedRoom = room;
-                      });
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => BookingDetailScreen(room: room),
+                        ),
+                      );
                     },
                   ),
                 );
@@ -243,17 +245,5 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
     );
   }
 
-  Widget _buildDetailView() {
-    return WillPopScope(
-      onWillPop: () async {
-        setState(() {
-          _selectedRoom = null;
-        });
-        return false;
-      },
-      child: BookingDetailScreen(
-        room: _selectedRoom!,
-      ),
-    );
-  }
+  // Detail view is presented via Navigator.push; no inline detail view needed.
 }
