@@ -16,45 +16,60 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Your Study Spot'),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Available Rooms',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: isLandscape ? 3 : 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: isLandscape ? 1.4 : 0.72,
-              ),
-              itemCount: mockRooms.length,
-              itemBuilder: (context, index) {
-                return RoomCard(
-                  room: mockRooms[index],
-                  onTap: () {
-                    widget.onRoomSelected(mockRooms[index]);
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Determine column count based on available width
+          int crossAxisCount = constraints.maxWidth < 600 ? 2 : 3;
+          
+          // Calculate exact item width accounting for padding and spacing
+          double padding = 16.0; // Left and right padding (16.0 each side)
+          double crossAxisSpacing = 16.0;
+          double totalSpacingWidth = (crossAxisCount - 1) * crossAxisSpacing;
+          double itemWidth =
+              (constraints.maxWidth - (padding * 2) - totalSpacingWidth) / crossAxisCount;
+          
+          // Fixed height ensures all card content fits without overflow
+          double fixedHeight = 340.0;
+          double childAspectRatio = itemWidth / fixedHeight;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Available Rooms',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: childAspectRatio,
+                  ),
+                  itemCount: mockRooms.length,
+                  itemBuilder: (context, index) {
+                    return RoomCard(
+                      room: mockRooms[index],
+                      onTap: () {
+                        widget.onRoomSelected(mockRooms[index]);
+                      },
+                    );
                   },
-                );
-              },
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
