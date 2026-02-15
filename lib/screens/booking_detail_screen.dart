@@ -17,8 +17,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _purposeController;
   DateTime? _selectedDate;
-  String? _selectedDuration;
-  final List<String> _durations = ['1 Hour', '2 Hours', '4 Hours'];
+  TimeOfDay? _startTime;
+  TimeOfDay? _endTime;
 
   @override
   void initState() {
@@ -47,45 +47,63 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   void _handleConfirmBooking() {
-    if (_formKey.currentState!.validate() && _selectedDate != null) {
+    // Basic form + date validation
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (_selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Booking confirmed for ${widget.room.name}!'),
-          duration: const Duration(seconds: 2),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text('Please select a date')),
       );
-
-      // After showing confirmation, either pop the route if possible
-      // or reset the form (useful for embedded/side-by-side layouts).
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (!mounted) return;
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        } else {
-          // Reset the form fields
-          _formKey.currentState?.reset();
-          setState(() {
-            _purposeController.clear();
-            _selectedDate = null;
-            _selectedDuration = null;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Booking successful.'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-      });
-    } else if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a date'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      return;
     }
+
+    // Ensure times are selected
+    if (_startTime == null || _endTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select start and end times')),
+      );
+      return;
+    }
+
+    // Validate that end is after start
+    final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
+    final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
+    if (endMinutes <= startMinutes) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('End time must be after start time')),
+      );
+      return;
+    }
+
+    // All good — confirm booking
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Booking confirmed for ${widget.room.name}!'),
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      } else {
+        // Reset the form fields for embedded layouts
+        _formKey.currentState?.reset();
+        setState(() {
+          _purposeController.clear();
+          _selectedDate = null;
+          _startTime = null;
+          _endTime = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Booking successful.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
   }
 
   @override
@@ -369,41 +387,67 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          // Duration Dropdown
-          DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              labelText: 'Duration',
-              prefixIcon: const Icon(Icons.timer),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            items: _durations.map((duration) {
-              // Disable 4 Hours option for free tier
-              bool isDisabled = !widget.room.isPremium && duration == '4 Hours';
-              return DropdownMenuItem(
-                enabled: !isDisabled,
-                value: duration,
-                child: Text(
-                  duration,
-                  style: TextStyle(
-                    color: isDisabled ? Colors.grey[400] : null,
+          // Start and End Time pickers
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: _startTime ?? TimeOfDay.now(),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _startTime = picked;
+                      });
+                    }
+                  },
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Start Time',
+                      prefixIcon: const Icon(Icons.schedule),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      _startTime == null
+                          ? 'Select Time'
+                          : _startTime!.format(context),
+                    ),
                   ),
                 ),
-              );
-            }).toList(),
-            value: _selectedDuration,
-            onChanged: (value) {
-              setState(() {
-                _selectedDuration = value;
-              });
-            },
-            validator: (value) {
-              if (value == null) {
-                return 'Please select a duration';
-              }
-              return null;
-            },
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: _endTime ?? TimeOfDay.now(),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _endTime = picked;
+                      });
+                    }
+                  },
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'End Time',
+                      prefixIcon: const Icon(Icons.schedule),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      _endTime == null ? 'Select Time' : _endTime!.format(context),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           // Confirm Button
