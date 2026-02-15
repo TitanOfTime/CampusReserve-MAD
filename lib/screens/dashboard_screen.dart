@@ -41,7 +41,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisCount: isLandscape ? 3 : 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.85,
+                childAspectRatio: isLandscape ? 1.4 : 0.72,
               ),
               itemCount: mockRooms.length,
               itemBuilder: (context, index) {
@@ -72,6 +72,8 @@ class RoomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -83,7 +85,7 @@ class RoomCard extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  height: 120,
+                  height: isLandscape ? 140 : 120,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(12),
@@ -132,9 +134,10 @@ class RoomCard extends StatelessWidget {
               ],
             ),
             // Content
-            Expanded(
+            Flexible(
+              fit: FlexFit.loose,
               child: Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -212,6 +215,30 @@ class RoomCard extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+            // Book Now Button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10.0, 6.0, 10.0, 10.0),
+              child: SizedBox(
+                width: double.infinity,
+                height: 34,
+                child: ElevatedButton(
+                  onPressed: onTap,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0052CC),
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text(
+                    'Book Now',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ),
